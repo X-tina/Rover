@@ -1,75 +1,98 @@
+#require 'active_support/core_ext/string'
+require 'active_support/all'
+
 class Rover
-	attr_accessor :x_coordinate, :y_coordinate, :look_side
-	
-	def initialize(x, y, p)
-		@x_coordinate, @y_coordinate = x, y
-		@look_side = p
-	end
+  attr_accessor :x_coordinate, :y_coordinate
 
-	Direction = %w[N W S E]
-	Action = 'LRM'
-	
-	@@upper_x = 5
-	@@upper_y = 5
-	
-				
-	def rotate(instructions)
+  def initialize(x, y, l)    
+    @x_coordinate, @y_coordinate = x, y
+    #raise ArgumentError, "Invalid coordinates" unless checkig_coordinate!(@x_coordinate, @y_coordinate)
+	  @start_direction = l
+    #raise ArgumentError, "Invalid direction" unless valid_direction?
+    #Error_message "Invalid direction" unless valid_direction?   
+  #ensure return false
+  end
+ 
+  DIRECTION = %w[N W S E]
+  ACTION = 'LRM'
+        
+  def rover_moving(instructions)
+    @look_side = DIRECTION.index(@start_direction)
+    instructions.each_char do |i|
+      if i == 'L'	    
+        @look_side += 1
+        checking_moving_direction				
+	    elsif i == 'R'	  	
+	      @look_side -= 1
+	      checking_moving_direction			
+	    else moving_forward
+	    end			
+    end   
+  end  
 
-		@point = Direction.index(@look_side)
-		
-		instructions.each_char do |i|
-			if i == 'L'
-				if @point == Direction.length-1 
-					@point = 0 
-					next 
-				end
-				@point += 1				
-			elsif i == 'R'
-				@point -= 1			
-			else 	
-				case
-				when Direction[@point] == 'S'
-					@y_coordinate -=1 
-					valid_coordinate(@y_coordinate)
-				when Direction[@point] == 'E'
-					@x_coordinate += 1
-					valid_coordinate(@x_coordinate) 
-				when Direction[@point] == 'N'
-					@y_coordinate += 1
-					valid_coordinate(@y_coordinate) 
-				when Direction[@point] == 'W'
-					@x_coordinate -= 1
-					valid_coordinate(@x_coordinate)								
-				end						
-			end
-		end
-		puts "Last coordiates: "
-		puts "-------"
-		puts @x_coordinate, @y_coordinate, @look_side
-		puts "-------"
-	end
+  def direction
+  	DIRECTION[@look_side]
+  end
 
-	private
+  def output_results
+    "#{self.x_coordinate} #{self.y_coordinate} #{self.direction}"
+  end
 
-	def valid_coordinate(var)
-		if var == @x_coordinate			
-			unless var.between?(0, @@upper_x)
-				raise "Error. Overflow"
-			end
-		else 
-			unless var.between?(0, @@upper_y)
-				raise "Error. Overflow"
-			end
-		end				
-	end
+  private
+
+    def moving_forward
+      case DIRECTION[@look_side]
+      when  'S'
+        @y_coordinate -= 1 
+        checkig_coordinate!(@x_coordinate, @y_coordinate)
+      when 'E'
+        @x_coordinate += 1
+        checkig_coordinate!(@x_coordinate, @y_coordinate) 
+      when 'N'
+        @y_coordinate += 1
+        checkig_coordinate!(@x_coordinate, @y_coordinate) 
+      else 'W'
+        @x_coordinate -= 1
+        checkig_coordinate!(@x_coordinate, @y_coordinate)
+      end   
+    end
+
+    def checking_moving_direction
+      if @look_side == DIRECTION.length
+      	@look_side = 0
+      elsif @look_side == -1
+      	@look_side = DIRECTION.length-1
+      end      		
+    end
+
+    def checkig_coordinate!(x, y)
+	    unless x.between?(0, UPPER_X) && y.between?(0, UPPER_Y)
+        return false
+	    end
+    end
+
+    def valid_direction?
+      DIRECTION.include?(@start_direction)        
+    end 
 end
-	
-	first_rover = Rover.new(1, 2, 'N')
-	first_rover.rotate('LMLMLMLMM')
 
-	second_rover = Rover.new(3, 3, 'E')
-	second_rover.rotate('MMRMMRMRRM')
-	
+input_data = File.open('input_data.txt', 'r'){ |file| file.read }.split("\n")
+plateau_upper_coordinates = input_data.shift.split().map {|coord| coord.to_i}
+UPPER_X = plateau_upper_coordinates[0]
+UPPER_Y = plateau_upper_coordinates[1]
+
+file = File.new('output_data.txt', 'w')
+lines = input_data.length
+1.step(lines,2) do |ln|
+  x, y, start_direction = input_data[ln-1].split  
+  rover = Rover.new x.to_i, y.to_i, start_direction
+  rover.rover_moving(input_data[ln])  
+  file.puts rover.output_results
+  file.puts "---------"   
+end
+file.close
+ 
+
 
 	
 
