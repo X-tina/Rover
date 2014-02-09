@@ -2,7 +2,7 @@ require 'active_support/all'
 
 class Rover
   attr_accessor :x_coordinate, :y_coordinate
- 
+  attr_reader :output_string
   DIRECTION = %w[N W S E] 
 
   def rover_moving(instructions)
@@ -32,13 +32,9 @@ class Rover
     DIRECTION[@look_side]
   end
 
-  def output_results
-    output_string
-  end
-
   private
 
-  attr_accessor :output_string
+  attr_writer :output_string
 
   def moving_forward      
     case DIRECTION[@look_side]
@@ -86,8 +82,7 @@ lines = input_data.length
   rover = Rover.new 
   if rover.lands?(x.to_i, y.to_i, start_direction)
     rover.rover_moving(input_data[ln]) 
-    file.puts rover.output_results   
-    file.puts "---------"   
+    file.puts rover.output_string
   else file.puts "Uncorrect initial data"   
   end   
 end
