@@ -24,8 +24,7 @@ class Rover
   def lands?(x, y, direction)
      @x_coordinate, @y_coordinate = x, y
      @start_direction = direction
-     return false  if (!valid_direction? or !valid_coordinate?(@x_coordinate, @y_coordinate))
-     return true
+     (valid_direction? && valid_coordinate?(@x_coordinate, @y_coordinate))
   end  
 
   def direction
@@ -59,37 +58,10 @@ class Rover
   end
 
   def valid_coordinate?(x, y)     
-    unless x.between?(0, UPPER_X) && y.between?(0, UPPER_Y)
-      return false        
-    end
-    return true      
+    x.between?(0, UPPER_X) && y.between?(0, UPPER_Y)
   end
 
   def valid_direction?
     DIRECTION.include?(@start_direction)        
   end
 end
-
-input_data = File.open('input_data.txt', 'r'){ |file| file.read }.split("\n")
-plateau_upper_coordinates = input_data.shift.split().map {|coord| coord.to_i}
-UPPER_X = plateau_upper_coordinates[0]
-UPPER_Y = plateau_upper_coordinates[1]
-
-file = File.new('output_data.txt', 'w')
-lines = input_data.length
-1.step(lines,2) do |ln|
-  x, y, start_direction = input_data[ln-1].split  
-  rover = Rover.new 
-  if rover.lands?(x.to_i, y.to_i, start_direction)
-    rover.rover_moving(input_data[ln]) 
-    file.puts rover.output_string
-  else file.puts "Uncorrect initial data"   
-  end   
-end
-file.close
- 
-
-
-	
-
-
